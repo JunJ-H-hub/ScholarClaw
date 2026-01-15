@@ -58,7 +58,7 @@ async def writing_director_node(state: WritingState) -> Dict[str, Any]:
     await state_queue.put(BackToFrontData(step=ExecutionState.WRITING_DIRECTOR,state="initializing",data=None))
     try: 
         logger.info("开始执行写作主管节点")
-        """写作主管节点：拆分大纲为小节"""
+        """写作主管节点：生成大纲，并将大纲拆分成子任务"""
         user_request = state["user_request"]
         global_analysis = state["global_analysis"]
         prompt = f"""
@@ -66,7 +66,7 @@ async def writing_director_node(state: WritingState) -> Dict[str, Any]:
         {user_request}
         该领域的分析:
         {global_analysis}
-        请根据用户提供的需求和关于该领域的分析，生成结构清晰、逻辑连贯的写作子任务，每个子任务应该由一个小节组成：
+        请根据用户提供的需求和关于该领域的分析，生成结构清晰、逻辑连贯的写作子任务：
         """
         # response = await writing_director_agent.run(task = prompt)
         is_thinking = None

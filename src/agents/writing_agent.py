@@ -4,11 +4,11 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from typing import Dict, Any
-from langgraph.graph import StateGraph
+from langgraph.graph import END, StateGraph
 from sqlalchemy.sql.functions import current_date
 from src.agents.sub_writing_agent.writing_state_models import WritingState
 from src.core.state_models import State
-from src.agents.sub_writing_agent import writing_director_agent, writing_agent, retrieval_agent
+from src.agents.sub_writing_agent import writing_director_agent, parallel_writing_node
 from src.agents.sub_writing_agent.writing_director_agent import writing_director_node
 from src.agents.sub_writing_agent.writing_agent import section_writing_node
 from src.agents.sub_writing_agent.retrieval_agent import retrieval_node
@@ -17,22 +17,6 @@ from src.core.state_models import BackToFrontData
 from src.utils.tool_utils import handlerChunk
 from src.utils.log_utils import setup_logger
 logger = setup_logger(__name__)
-async def condition_edge(state: WritingState) -> str:
-    """判断是否继续下一个小节"""
-    current_section_index = state["current_section_index"]
-    writted_sections = state["writted_sections"]
-    sections = state["sections"]
-
-    if current_section_index+1 >= len(sections) and writted_sections[-1].completed:
-        # 所有小节都已经完成
-        return "end"
-    elif current_section_index+1 == len(writted_sections) and writted_sections[-1].completed:
-        # 移动到下一个小节
-        current_section_index = 0
-        return "section_writing_node"
-    else:
-        # 移动到检索节点
-        return "retrieval_node"
 
 class WritingWorkflow:
     def __init__(self):
@@ -44,16 +28,14 @@ class WritingWorkflow:
 
         # 添加节点
         builder.add_node("writing_director_node", writing_director_node)
-        builder.add_node("retrieval_node", retrieval_node)
-        builder.add_node("section_writing_node", section_writing_node)
+        builder.add_node("parallel_writing_node", parallel_writing_node)
 
         # 设置入口点
         builder.set_entry_point("writing_director_node")
 
         # 添加边
-        builder.add_edge("writing_director_node", "section_writing_node")
-        builder.add_edge("retrieval_node", "section_writing_node")
-        builder.add_conditional_edges("section_writing_node", condition_edge)
+        builder.add_edge("writing_director_node", "parallel_writing_node")
+        builder.add_edge("parallel_writing_node", END)
 
         # 编译图
         graph = builder.compile()

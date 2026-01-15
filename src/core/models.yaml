@@ -3,11 +3,15 @@ model-provider:
   - siliconflow
   - openai
   - dashscope
+  - ark
 
 # 项目默认使用的模型和嵌入模型配置
+# default-model:
+#   model-provider: siliconflow
+#   model: Qwen/Qwen3-32B
 default-model:
-  model-provider: siliconflow
-  model: Qwen/Qwen3-32B
+  model-provider: ark
+  model: doubao-seed-1-6-thinking-250715
 
 default-embedding-model:
   model-provider: siliconflow
@@ -42,3 +46,7 @@ openai:
 dashscope:
   api_key: DASHSCOPE_API_KEY
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+
+ark:
+  api_key: ARK_API_KEY
+  base_url: https://ark.cn-beijing.volces.com/api/v3

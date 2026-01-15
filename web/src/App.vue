@@ -93,6 +93,7 @@ const eventSource = ref(null)
 const isReviewing = ref(false);
 
 const currentActiveStep = ref(null); // 使用 ref 确保响应式
+const activeSubSteps = ref(new Map()); // 追踪writing步骤的活跃子块（key为section_id）
 
 // Markdown解析方法，增加安全过滤
 const parseMarkdown = (content) => {
@@ -191,10 +192,15 @@ const submitRequest = () => {
       isError: false,
       timestamp: new Date().toISOString(),
       show: false,
-      showThinking: true // 控制思考部分的展开状态
+      showThinking: true, // 控制思考部分的展开状态
     };
     steps.value.push(stepElement);
-    currentActiveStep.value = stepElement; // 记录当前活跃步骤，供后续更新
+    if (step.startsWith("section_writing")) {
+      // writing步骤添加子块数组
+      activeSubSteps.value.set(step, stepElement);
+    }else{
+      currentActiveStep.value = stepElement; // 记录当前活跃步骤，供后续更新
+    }
 
     nextTick(() => {
       stepElement.show = true;
@@ -204,6 +210,9 @@ const submitRequest = () => {
 
       // 处理「阶段正在处理」状态：新增步骤，标记为活跃状态
   const handleThinking = (step, data) => {
+    if(step.startsWith("section_writing")){
+      currentActiveStep.value = activeSubSteps.value.get(step)
+    }
     if (!currentActiveStep.value || currentActiveStep.value.step !== step) {
       console.warn(`No active step found for completed step: ${step}`);
       return;
@@ -220,6 +229,9 @@ const submitRequest = () => {
 
       // 处理「阶段正在思考」状态：新增步骤，标记为活跃状态
   const handleGenerating = (step, data) => {
+    if(step.startsWith("section_writing")){
+      currentActiveStep.value = activeSubSteps.value.get(step)
+    }
     if (!currentActiveStep.value || currentActiveStep.value.step !== step) {
       console.warn(`No active step found for completed step: ${step}`);
       return;
@@ -248,6 +260,9 @@ const submitRequest = () => {
 
   // 处理「阶段完成」状态：更新当前活跃步骤的内容
   const handleComplete = (step, data) => {
+    if(step.startsWith("section_writing")){
+      currentActiveStep.value = activeSubSteps.value.get(step)
+    }
     if (!currentActiveStep.value || currentActiveStep.value.step !== step) {
       console.warn(`No active step found for completed step: ${step}`);
       return;
@@ -264,6 +279,9 @@ const submitRequest = () => {
 
   // 处理「阶段出错」状态：更新当前活跃步骤的内容（标记错误）
   const handleError = (step, data) => {
+    if(step.startsWith("section_writing")){
+      currentActiveStep.value = activeSubSteps.value.get(step)
+    }
     if (!currentActiveStep.value || currentActiveStep.value.step !== step) {
       console.warn(`No active step found for error step: ${step}`);
       return;
@@ -317,6 +335,11 @@ const submitRequest = () => {
 
       // 扩展其他阶段
     };
+    if(step.startsWith("section_writing")){
+      const stepParts = step.split("_");
+      const partNum = stepParts[stepParts.length - 1]; // 用 length-1 取最后一个元素
+      stepNames[step] = "撰写第" + partNum + "部分";
+    }
     return stepNames[step] || step;
   };
 
@@ -324,6 +347,7 @@ const submitRequest = () => {
   const finishProcessing = () => {
     isSubmitting.value = false;
     eventSource.value?.close();
+    activeSubSteps.value.clear(); // 清理活跃子块Map
   };
 
   // 自动滚动到最新步骤
