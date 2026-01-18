@@ -2,7 +2,7 @@ import os
 import yaml
 from dotenv import load_dotenv
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, ParamSpecArgs, Union
 
 class Config:
     """配置管理类，使用单例模式确保全局只有一个配置实例"""
@@ -44,7 +44,8 @@ class Config:
             self._config[key] = value
     
     def _load_yaml_config(self) -> None:
-        """加载models.yaml文件中的配置"""
+        """加载YAML配置文件（models.yaml和system_params.yaml）"""
+        # 加载models.yaml
         yaml_path = Path(__file__).parent / "models.yaml"
         if yaml_path.exists():
             try:
@@ -59,6 +60,22 @@ class Config:
                 print(f"错误: 加载models.yaml文件时出错: {e}")
         else:
             print(f"警告: 未找到models.yaml文件: {yaml_path}")
+        
+        # 加载system_params.yaml
+        system_params_path = Path(__file__).parent / "system_params.yaml"
+        if system_params_path.exists():
+            try:
+                with open(system_params_path, 'r', encoding='utf-8') as f:
+                    system_config = yaml.safe_load(f)
+                    if system_config:
+                        # 深度合并系统参数配置到字典中
+                        self._merge_config(self._config, system_config)
+            except yaml.YAMLError as e:
+                print(f"错误: 解析system_params.yaml文件失败: {e}")
+            except Exception as e:
+                print(f"错误: 加载system_params.yaml文件时出错: {e}")
+        else:
+            print(f"警告: 未找到system_params.yaml文件: {system_params_path}")
     
     def _merge_config(self, target: Dict[str, Any], source: Dict[str, Any]) -> None:
         """深度合并配置字典"""
@@ -200,3 +217,10 @@ class Config:
 
 # 创建全局配置实例
 config = Config()
+
+def main():
+    """测试配置管理类的各项功能"""
+    print(config["KB_TYPE"])
+
+if __name__ == "__main__":
+    main()

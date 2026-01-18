@@ -1,12 +1,15 @@
 from autogen_agentchat.agents import AssistantAgent
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional,Dict,Any
 from src.utils.log_utils import setup_logger
 from src.core.prompts import reading_agent_prompt
 from src.core.model_client import create_default_client, create_reading_model_client
 from src.core.state_models import BackToFrontData
 from src.core.state_models import State,ExecutionState
 from src.services.chroma_client import ChromaClient
+from src.knowledge.knowledge import knowledge_base
+from src.core.config import config
+
 import asyncio
 import json
 
@@ -43,6 +46,38 @@ read_agent = AssistantAgent(
     model_client_stream=True
 )
 
+
+async def add_papers_to_kb(papers:Optional[List[Dict[str, Any]]], extracted_papers: ExtractedPapersData):
+    """将提取的论文数据添加到知识库"""
+    embedding_dic = config.get("embedding-model")
+    embedding_provider = embedding_dic.get("model-provider")
+    provider_dic = config.get(embedding_provider)
+    
+    embed_info = {
+        "name": embedding_dic.get("model"),
+        "dimension": embedding_dic.get("dimension"),
+        "base_url": provider_dic.get("base_url"),
+        "api_key": provider_dic.get("api_key"),
+    }
+    kb_type = config.get("KB_TYPE")
+    database_info = await knowledge_base.create_database(
+        "临时知识库", "用于存储临时提取的论文数据，仅用于本次报告的生成，用完即删", kb_type=kb_type, embed_info=embed_info, llm_info=None,
+    )
+    db_id = database_info["db_id"]
+    config.set("tmp_db_id", db_id) # 记录临时知识库的db_id，后面retrieval_agent中使用
+    
+    documents=[json.dumps(paper.model_dump(),ensure_ascii=False) for paper in extracted_papers.papers],
+    metadatas=[paper for paper in papers],
+    ids = [i for i in range(len(papers))]
+    data = {
+        "documents": documents,
+        "metadatas": metadatas,
+        "ids": ids,
+    }
+
+    await knowledge_base.add_processed_content(db_id, data)
+
+
 async def reading_node(state: State) -> State:
     """搜索论文节点"""
     state_queue = state["state_queue"]
@@ -61,12 +96,9 @@ async def reading_node(state: State) -> State:
     for result in results:
         parsed_paper = result.messages[-1].content
         extracted_papers.papers.append(parsed_paper)     
+
      # 还得存入向量数据库中
-    chroma_client = ChromaClient()
-    chroma_client.add_documents(
-        documents=[json.dumps(paper.model_dump(),ensure_ascii=False) for paper in extracted_papers.papers],
-        metadatas=[paper for paper in papers],
-    )   
+    await add_papers_to_kb(papers,extracted_papers)
         
     current_state.extracted_data = extracted_papers
     await state_queue.put(BackToFrontData(step=ExecutionState.READING,state="completed",data=f"论文阅读完成，共阅读 {len(extracted_papers.papers)} 篇论文"))

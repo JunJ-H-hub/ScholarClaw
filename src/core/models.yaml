@@ -16,6 +16,12 @@ default-model:
 default-embedding-model:
   model-provider: siliconflow
   model: Qwen/Qwen3-Embedding-8B
+  dimension: 1024
+
+embedding-model:
+  model-provider: siliconflow
+  model: Qwen/Qwen3-Embedding-8B
+  dimension: 1024
 
 # 项目模块具体使用的模型和嵌入模型配置（可选）
 reading-model:
