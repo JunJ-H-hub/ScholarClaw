@@ -1,18 +1,40 @@
 <template>
   <div class="app-container">
     <h1>智能调研报告生成</h1>
+    
     <div class="input-section">
       <textarea 
         v-model="userInput" 
         placeholder="请输入您想调研的问题..."
         rows="5"
+        class="input-textarea"
       ></textarea>  
-      <button 
-        @click="submitRequest" 
-        :disabled="isSubmitting"
-      >
-        {{ isSubmitting ? '处理中...' : '提交' }}
-      </button>
+      
+      <div class="input-actions">
+        <button 
+          class="btn-submit"
+          @click="submitRequest" 
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? '处理中...' : '提交' }}
+        </button>
+        
+        <div class="knowledge-selector">
+          <button 
+            class="btn-select-knowledge"
+            @click="showSelectModal = true"
+          >
+            {{ selectedDatabase ? `📚 ${selectedDatabase.name}` : '选择知识库' }}
+          </button>
+          <button 
+            v-if="selectedDatabase"
+            class="btn-manage-knowledge"
+            @click="goToKnowledgeBase"
+          >
+            管理知识库
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="progress-section" v-if="steps.length > 0" id="steps-container">
@@ -75,14 +97,25 @@
       ></textarea>
       <button @click="copyReport">复制报告</button>
     </div>
+    
+    <!-- 知识库选择模态框 -->
+    <SelectKnowledgeModal
+      v-model:visible="showSelectModal"
+      :current-database-id="selectedDatabase?.id || ''"
+      @select="handleSelectDatabase"
+      @create-database="handleCreateDatabase"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, nextTick, onBeforeUnmount } from 'vue'
-import { marked } from 'marked'  // 引入marked库
-import DOMPurify from 'dompurify';  // 引入安全过滤插件
+import { useRouter } from 'vue-router'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import SelectKnowledgeModal from './components/SelectKnowledgeModal.vue'
 
+const router = useRouter()
 
 const userInput = ref('')
 const userReviewInput = ref('')
@@ -90,7 +123,9 @@ const isSubmitting = ref(false)
 const steps = ref([])
 const reportContent = ref('')
 const eventSource = ref(null)
-const isReviewing = ref(false);
+const isReviewing = ref(false)
+const showSelectModal = ref(false)
+const selectedDatabase = ref(null)
 
 const currentActiveStep = ref(null); // 使用 ref 确保响应式
 const activeSubSteps = ref(new Map()); // 追踪writing步骤的活跃子块（key为section_id）
@@ -136,13 +171,21 @@ const submitReviewInput = async () => {
 const submitRequest = () => {
   if (!userInput.value.trim()) return
 
-  // 存储当前活跃的步骤（用于后续更新complete/error状态）
+  const dbId = selectedDatabase.value ? selectedDatabase.value.id : ''
+
   isSubmitting.value = true
   steps.value = []
   reportContent.value = ''
   
   // 初始化SSE连接
   eventSource.value = new EventSource(`/api/research?query=${encodeURIComponent(userInput.value)}`)
+
+  //   let apiUrl = `/api/research?query=${encodeURIComponent(userInput.value)}`
+  // if (dbId) {
+  //   apiUrl += `&db_id=${encodeURIComponent(dbId)}`
+  // }
+  
+  // eventSource.value = new EventSource(apiUrl)
 
   eventSource.value.onmessage = (event) => {
     try {
@@ -365,6 +408,18 @@ const copyReport = () => {
   navigator.clipboard.writeText(reportContent.value)
 }
 
+const handleSelectDatabase = (database) => {
+  selectedDatabase.value = database
+}
+
+const handleCreateDatabase = () => {
+  router.push('/knowledge')
+}
+
+const goToKnowledgeBase = () => {
+  router.push('/knowledge')
+}
+
 onBeforeUnmount(() => {
   if (eventSource.value) {
     eventSource.value.close()
@@ -391,47 +446,226 @@ h1 {
 .input-section {
   margin-bottom: 20px;
   background: #f8f9fa;
-  padding: 20px;
+  padding: clamp(15px, 3vw, 25px);
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.input-section textarea {
-  width: 96%;
-  padding: 15px;
-  margin-bottom: 15px;
+.input-textarea {
+  width: 100%;
+  padding: clamp(12px, 2vw, 18px);
+  margin-bottom: clamp(10px, 2vw, 20px);
   border: 1px solid #e1e5e9;
   border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  font-size: clamp(14px, 1.5vw, 16px);
+  line-height: 1.5;
+  transition: border-color 0.3s, box-shadow 0.3s;
   resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+  min-height: 120px;
+  max-height: 300px;
 }
 
-.input-section textarea:focus {
+.input-textarea:focus {
   outline: none;
   border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
 }
 
-.input-section button {
+.input-textarea::placeholder {
+  color: #adb5bd;
+}
+
+.input-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(10px, 2vw, 20px);
+  flex-wrap: wrap;
+}
+
+.btn-submit {
+  padding: clamp(10px, 1.5vw, 14px) clamp(20px, 4vw, 30px);
   background: #3498db;
   color: white;
   border: none;
-  padding: 12px 25px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 16px);
   font-weight: 500;
-  transition: background 0.3s;
+  transition: background 0.3s, transform 0.2s;
+  flex-shrink: 0;
+  min-width: fit-content;
 }
 
-.input-section button:hover:not(:disabled) {
+.btn-submit:hover:not(:disabled) {
   background: #2980b9;
+  transform: translateY(-1px);
 }
 
-.input-section button:disabled {
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
   background: #bdc3c7;
   cursor: not-allowed;
+  transform: none;
+}
+
+.knowledge-selector {
+  display: flex;
+  gap: clamp(8px, 1.5vw, 12px);
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.btn-select-knowledge,
+.btn-manage-knowledge {
+  padding: clamp(8px, 1.2vw, 12px) clamp(16px, 3vw, 24px);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(12px, 1.2vw, 14px);
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.btn-select-knowledge {
+  background: #e3f2fd;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.btn-select-knowledge:hover {
+  background: #3498db;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-manage-knowledge {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 2px solid #ced4da;
+}
+
+.btn-manage-knowledge:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #495057;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1200px) {
+  .input-section {
+    padding: 18px;
+  }
+  
+  .input-textarea {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 992px) {
+  .input-section {
+    padding: 16px;
+  }
+  
+  .input-textarea {
+    padding: 13px;
+    font-size: 15px;
+    min-height: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 15px;
+  }
+  
+  .input-section {
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .input-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .btn-submit {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+  
+  .knowledge-selector {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .btn-select-knowledge,
+  .btn-manage-knowledge {
+    flex: 1;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .input-textarea {
+    padding: 12px;
+    font-size: 14px;
+    min-height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .input-section {
+    padding: 12px;
+  }
+  
+  .input-textarea {
+    padding: 10px;
+    font-size: 14px;
+    min-height: 70px;
+    max-height: 200px;
+  }
+  
+  .btn-submit {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .btn-select-knowledge,
+  .btn-manage-knowledge {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .app-container {
+    max-width: 1000px;
+  }
 }
 
 .progress-section {

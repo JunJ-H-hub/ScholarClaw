@@ -9,6 +9,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/knowledge': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/send_input': {
         target: 'http://localhost:8000',
         changeOrigin: true
