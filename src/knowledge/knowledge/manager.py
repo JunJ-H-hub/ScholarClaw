@@ -1,11 +1,13 @@
 import asyncio
 import json
 import os
+from typing import Dict, Optional, Union, List
 
 from src.core.config import config
 from src.knowledge.knowledge.base import KBNotFoundError, KnowledgeBase
 from src.knowledge.knowledge.factory import KnowledgeBaseFactory
-from src.core.model_client import get_reranker
+# from src.core.model_client import get_reranker
+from src.utils.datetime_utils import coerce_any_to_utc_datetime, utc_isoformat
 from src.utils.log_utils import setup_logger
 
 logger = setup_logger(__name__)
@@ -235,32 +237,32 @@ class KnowledgeBaseManager:
         results = await kb_instance.aquery(query_text, db_id, **kwargs)
         
         # 检查是否启用重排序功能
-        if config.get("enable_reranker", False) and results:
-            try:
-                # 获取重排序器实例
-                reranker = get_reranker(config.reranker)
+        # if config.get("enable_reranker", False) and results:
+        #     try:
+        #         # 获取重排序器实例
+        #         reranker = get_reranker(config.reranker)
                 
-                # 准备重排序输入：查询文本和所有检索结果的文本内容
-                sentences = [result["content"] for result in results]
-                sentence_pairs = (query_text, sentences)
+        #         # 准备重排序输入：查询文本和所有检索结果的文本内容
+        #         sentences = [result["content"] for result in results]
+        #         sentence_pairs = (query_text, sentences)
                 
-                # 计算重排序分数
-                rerank_scores = reranker.compute_score(sentence_pairs, normalize=True)
+        #         # 计算重排序分数
+        #         rerank_scores = reranker.compute_score(sentence_pairs, normalize=True)
                 
-                # 将重排序分数添加到结果中
-                for i, result in enumerate(results):
-                    if i < len(rerank_scores):
-                        result["rerank_score"] = rerank_scores[i]
-                    else:
-                        result["rerank_score"] = 0.0
+        #         # 将重排序分数添加到结果中
+        #         for i, result in enumerate(results):
+        #             if i < len(rerank_scores):
+        #                 result["rerank_score"] = rerank_scores[i]
+        #             else:
+        #                 result["rerank_score"] = 0.0
                 
-                logger.debug(f"Applied reranking to {len(results)} results")
+        #         logger.debug(f"Applied reranking to {len(results)} results")
                 
-            except Exception as e:
-                logger.warning(f"Reranking failed: {e}")
-                # 重排序失败时，为所有结果添加默认的重排序分数
-                for result in results:
-                    result["rerank_score"] = result.get("score", 0.0)
+        #     except Exception as e:
+        #         logger.warning(f"Reranking failed: {e}")
+        #         # 重排序失败时，为所有结果添加默认的重排序分数
+        #         for result in results:
+        #             result["rerank_score"] = result.get("score", 0.0)
         
         return results
 

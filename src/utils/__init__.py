@@ -2,7 +2,9 @@ import hashlib
 import os
 import time
 
-from src.utils.logging_config import logger
+from src.utils.log_utils import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def is_text_pdf(pdf_path):

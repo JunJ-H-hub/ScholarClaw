@@ -6,15 +6,10 @@ from pathlib import Path
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse
-from starlette.responses import FileResponse as StarletteFileResponse
 
-from src.storage.db.models import User
-from server.utils.auth_middleware import get_admin_user
-from server.services.tasker import TaskContext, tasker
 from src.knowledge.knowledge import config, knowledge_base
 from src.knowledge.knowledge.indexing import SUPPORTED_FILE_EXTENSIONS, is_supported_file_extension, process_file_to_markdown
 from src.knowledge.knowledge.utils import calculate_content_hash
-from src.models.embed import test_embedding_model_status, test_all_embedding_models_status
 from src.utils import hashstr
 from src.utils.log_utils import setup_logger
 
@@ -248,7 +243,7 @@ async def delete_document(db_id: str, doc_id: str):
 # 测试查询知识库
 @knowledge.post("/databases/{db_id}/query-test")
 async def query_knowledge_base(
-    db_id: str, query: str = Body(...), meta: dict = Body(...), current_user: User = Depends(get_admin_user)
+    db_id: str, query: str = Body(...), meta: dict = Body(...)
 ):
     """查询知识库"""
     logger.debug(f"Query knowledge base {db_id}: {query}")
