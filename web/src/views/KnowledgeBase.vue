@@ -100,6 +100,14 @@ const toast = ref({
   type: 'success'
 })
 
+const normalizeDatabase = (db) => {
+  if (!db) return null
+  return {
+    ...db,
+    id: db.db_id || db.id
+  }
+}
+
 onMounted(() => {
   loadDatabases()
 })
@@ -108,7 +116,9 @@ const loadDatabases = async () => {
   isLoading.value = true
   try {
     const response = await knowledgeApi.getDatabases()
-    databases.value = response.data.databases || []
+    const rawDatabases = response.data.databases || []
+    databases.value = rawDatabases.map(db => normalizeDatabase(db)).filter(db => db !== null)
+    console.log('加载的知识库列表:', databases.value)
   } catch (error) {
     console.error('加载知识库列表失败:', error)
     showToast('加载知识库列表失败', 'error')
@@ -118,8 +128,26 @@ const loadDatabases = async () => {
 }
 
 const handleSelectDatabase = async (database) => {
+  console.log('选择知识库:', database)
+  console.log('当前选中的ID:', selectedDatabaseId.value)
+  console.log('点击的数据库ID:', database.id)
+  
+  if (selectedDatabaseId.value === database.id) {
+    selectedDatabaseId.value = ''
+    selectedDatabase.value = null
+    try {
+      await knowledgeApi.selectDatabase('')
+      showToast('已取消选择知识库', 'success')
+    } catch (error) {
+      console.error('取消选择知识库失败:', error)
+    }
+    return
+  }
+  
   selectedDatabaseId.value = database.id
   selectedDatabase.value = database
+  
+  console.log('设置后的选中ID:', selectedDatabaseId.value)
   
   try {
     await knowledgeApi.selectDatabase(database.id)
@@ -140,7 +168,8 @@ const handleDeleteDatabase = async (database) => {
   }
   
   try {
-    await knowledgeApi.deleteDatabase(database.id)
+    const dbIdToDelete = database.db_id || database.id
+    await knowledgeApi.deleteDatabase(dbIdToDelete)
     
     if (selectedDatabaseId.value === database.id) {
       selectedDatabaseId.value = ''
@@ -157,9 +186,15 @@ const handleDeleteDatabase = async (database) => {
 
 const handleCreateDatabase = async (data) => {
   try {
-    await knowledgeApi.createDatabase(data)
+    const response = await knowledgeApi.createDatabase(data)
+    const newDb = response.data || response
+    const normalizedDb = {
+      ...newDb,
+      id: newDb.db_id || newDb.id
+    }
     await loadDatabases()
     showToast('知识库创建成功', 'success')
+    return normalizedDb
   } catch (error) {
     console.error('创建知识库失败:', error)
     showToast('创建知识库失败', 'error')
@@ -194,9 +229,9 @@ const goBack = () => {
 
 <style scoped>
 .knowledge-base-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 

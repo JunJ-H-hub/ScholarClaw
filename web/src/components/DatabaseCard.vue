@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   database: {
     type: Object,
     required: true
@@ -61,6 +61,13 @@ defineProps({
 })
 
 defineEmits(['select', 'delete'])
+
+console.log('DatabaseCard渲染:', {
+  database: props.database,
+  databaseId: props.database.id,
+  dbId: props.database.db_id,
+  isSelected: props.isSelected
+})
 </script>
 
 <style scoped>

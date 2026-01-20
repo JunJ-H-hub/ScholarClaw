@@ -429,11 +429,13 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -441,6 +443,7 @@ h1 {
   color: #2c3e50;
   margin-bottom: 30px;
   font-weight: 600;
+  font-size: clamp(24px, 3vw, 32px);
 }
 
 .input-section {
@@ -589,6 +592,7 @@ h1 {
 @media (max-width: 768px) {
   .app-container {
     padding: 15px;
+    max-width: 100%;
   }
   
   .input-section {
@@ -626,6 +630,11 @@ h1 {
     padding: 12px;
     font-size: 14px;
     min-height: 80px;
+  }
+  
+  .progress-section,
+  .report-section {
+    max-width: 100%;
   }
 }
 
@@ -669,7 +678,8 @@ h1 {
 }
 
 .progress-section {
-  margin-bottom: 20px;
+  margin: 0 auto 20px;
+  max-width: 1000px;
   max-height: 500px;
   overflow-y: auto;
   padding-right: 5px;
@@ -784,7 +794,8 @@ h1 {
 }
 
 .report-section {
-  margin-top: 30px;
+  margin: 30px auto;
+  max-width: 1000px;
   background: #f8f9fa;
   padding: 20px;
   border-radius: 10px;

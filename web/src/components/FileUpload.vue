@@ -90,7 +90,7 @@ const isUploading = ref(false)
 const supportedTypes = ref([])
 
 const acceptTypes = computed(() => {
-  return supportedTypes.value.map(type => `.${type}`).join(',')
+  return supportedTypes.value.map(type => `${type}`).join(',')
 })
 
 onMounted(async () => {
