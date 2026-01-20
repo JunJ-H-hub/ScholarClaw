@@ -104,6 +104,7 @@ class KnowledgeBaseManager:
             知识库实例
         """
         if kb_type in self.kb_instances:
+            logger.info(f"获取 {kb_type} knowledge base instance 成功")
             return self.kb_instances[kb_type]
 
         # 创建新的知识库实例

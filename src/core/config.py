@@ -3,6 +3,11 @@ import yaml
 from dotenv import load_dotenv
 from pathlib import Path
 from typing import Any, Dict, Optional, ParamSpecArgs, Union
+from src.utils.log_utils import setup_logger
+
+logger = setup_logger(__name__)
+
+
 
 class Config:
     """配置管理类，使用单例模式确保全局只有一个配置实例"""
@@ -15,6 +20,7 @@ class Config:
         return cls._instance
     
     def __init__(self):
+        logger.info("初始化配置管理类")
         # 防止重复初始化
         if self._initialized:
             return

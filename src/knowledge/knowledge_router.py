@@ -104,11 +104,6 @@ async def delete_database(db_id: str):
     try:
         await knowledge_base.delete_database(db_id)
 
-        # 需要重新加载所有智能体，因为工具刷新了
-        from src.agents import agent_manager
-
-        await agent_manager.reload_all()
-
         return {"message": "删除成功"}
     except Exception as e:
         logger.error(f"删除数据库失败 {e}, {traceback.format_exc()}")

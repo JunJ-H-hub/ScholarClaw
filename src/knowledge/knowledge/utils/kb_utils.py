@@ -32,10 +32,10 @@ def validate_file_path(file_path: str, db_id: str = None) -> str:
         normalized_path = os.path.abspath(os.path.realpath(file_path))
 
         # 获取允许的根目录
-        from src.knowledge import knowledge_base
+        from src.knowledge.knowledge import knowledge_base
 
         allowed_dirs = [
-            os.path.abspath(os.path.realpath(config.save_dir)),
+            os.path.abspath(os.path.realpath(config.get("SAVE_DIR"))),
         ]
 
         # 如果指定了db_id，添加知识库特定的上传目录
@@ -45,7 +45,7 @@ def validate_file_path(file_path: str, db_id: str = None) -> str:
             except Exception:
                 # 如果无法获取db路径，使用通用上传目录
                 allowed_dirs.append(
-                    os.path.abspath(os.path.realpath(os.path.join(config.save_dir, "database", "uploads")))
+                    os.path.abspath(os.path.realpath(os.path.join(config.get("SAVE_DIR"), "database", "uploads")))
                 )
 
         # 检查路径是否在允许的目录内

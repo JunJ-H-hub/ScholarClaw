@@ -84,10 +84,24 @@ class ChromaKB(KnowledgeBase):
         # 创建或获取集合
         collection_name = db_id
 
-        # 尝试获取现有集合
-        collection = self.chroma_client.get_collection(name=collection_name, embedding_function=embedding_function)
-       
-        logger.info(f"Created new collection: {collection_name}")
+        try:
+            # 尝试获取现有集合
+            collection = self.chroma_client.get_collection(name=collection_name, embedding_function=embedding_function)
+            logger.info(f"Retrieved existing collection: {collection_name}")
+
+
+        except Exception:
+            # 创建新集合
+            logger.info(f"Creating new collection with embedding model: {embed_info.get('name', 'default')}")
+            collection_metadata = {
+                "db_id": db_id,
+                "created_at": utc_isoformat(),
+                "embedding_model": embed_info.get("name") if embed_info else "default",
+            }
+            collection = self.chroma_client.create_collection(
+                name=collection_name, embedding_function=embedding_function, metadata=collection_metadata
+            )
+            logger.info(f"Created new collection: {collection_name}")
 
         return collection
 
@@ -111,6 +125,7 @@ class ChromaKB(KnowledgeBase):
             return self.collections[db_id]
 
         if db_id not in self.databases_meta:
+            logger.info(f"self.databases_meta中没有{db_id}")
             return None
 
         try:

@@ -14,13 +14,17 @@ default-model:
   model: doubao-seed-1-6-thinking-250715
 
 default-embedding-model:
-  model-provider: siliconflow
-  model: Qwen/Qwen3-Embedding-8B
+  model-provider: ark
+  model: doubao-embedding-text-240715
   dimension: 1024
 
+# embedding-model:
+#   model-provider: siliconflow
+#   model: Qwen/Qwen3-Embedding-8B
+#   dimension: 1024
 embedding-model:
-  model-provider: siliconflow
-  model: Qwen/Qwen3-Embedding-8B
+  model-provider: ark
+  model: doubao-embedding-text-240715
   dimension: 1024
 
 # 项目模块具体使用的模型和嵌入模型配置（可选）
