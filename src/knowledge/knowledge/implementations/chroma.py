@@ -503,7 +503,7 @@ class ChromaKB(KnowledgeBase):
             raise e
                     
     
-    async def aquery(self, db_id: str ,query_text: Union[str, List[str]] = "", **kwargs) -> list[dict]:
+    async def aquery(self, db_id: str , query_text: Union[str, List[str]] = "", **kwargs) -> list[dict]:
         """异步查询知识库"""
         collection = await self._get_chroma_collection(db_id)
         if not collection:
