@@ -104,3 +104,11 @@ dist/
 *.dll
 *.so
 *.dylib
+data/knowledge_base_data/global_metadata.json
+data/knowledge_base_data/chroma_data/metadata_chroma.json
+data/knowledge_base_data/chroma_data/chromadb/c63cc355-56fc-4a3a-8df2-4c5d0c8c1423/data_level0.bin
+data/knowledge_base_data/chroma_data/chromadb/c63cc355-56fc-4a3a-8df2-4c5d0c8c1423/header.bin
+data/knowledge_base_data/chroma_data/chromadb/c63cc355-56fc-4a3a-8df2-4c5d0c8c1423/length.bin
+.trae/documents/左右分栏布局主界面实现.md
+data/knowledge_base_data/chroma_data/chromadb/c63cc355-56fc-4a3a-8df2-4c5d0c8c1423/link_lists.bin
+data/knowledge_base_data/chroma_data/kb_8f70a13918811436348933387ee5c158/uploads/测试_1bc5.txt

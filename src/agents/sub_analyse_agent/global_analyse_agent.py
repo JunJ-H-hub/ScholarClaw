@@ -131,14 +131,6 @@ class GlobalanalyseAgent:
                         }
                         yield global_analyse
                     yield chunk.content
-
-            # return {
-            #     "total_clusters": len(analyse_results),
-            #     "total_papers": sum(result.paper_count for result in analyse_results),
-            #     "cluster_themes": [result.theme for result in analyse_results],
-            #     "global_analyse": global_analyse,
-            #     "cluster_summaries": cluster_summaries
-            # }
             
         except Exception as e:
             logger.error(f"生成全局分析时出错: \n{e}")
