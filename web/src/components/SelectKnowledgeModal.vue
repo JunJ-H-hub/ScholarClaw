@@ -41,7 +41,6 @@
           <button 
             class="btn-confirm" 
             @click="handleConfirm"
-            :disabled="!selectedDatabaseId"
           >
             确认选择
           </button>
@@ -85,11 +84,20 @@ onMounted(() => {
   selectedDatabaseId.value = props.currentDatabaseId
 })
 
+const normalizeDatabase = (db) => {
+  if (!db) return null
+  return {
+    ...db,
+    id: db.db_id || db.id
+  }
+}
+
 const loadDatabases = async () => {
   isLoading.value = true
   try {
     const response = await knowledgeApi.getDatabases()
-    databases.value = response.data.databases || []
+    const rawDatabases = response.data.databases || []
+    databases.value = rawDatabases.map(db => normalizeDatabase(db)).filter(db => db !== null)
   } catch (error) {
     console.error('加载知识库列表失败:', error)
     databases.value = []
@@ -103,15 +111,21 @@ const isSelected = (dbId) => {
 }
 
 const handleSelect = (database) => {
-  selectedDatabaseId.value = database.id
+  if (selectedDatabaseId.value === database.id) {
+    selectedDatabaseId.value = ''
+  } else {
+    selectedDatabaseId.value = database.id
+  }
 }
 
 const handleConfirm = () => {
   if (selectedDatabaseId.value) {
     const database = databases.value.find(db => db.id === selectedDatabaseId.value)
     emit('select', database)
-    close()
+  } else {
+    emit('select', null)
   }
+  close()
 }
 
 const handleCreateDatabase = () => {

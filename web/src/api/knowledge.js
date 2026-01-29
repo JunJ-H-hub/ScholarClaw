@@ -31,7 +31,7 @@ export const knowledgeApi = {
   },
 
   selectDatabase(dbId) {
-    return api.get(`/databases/select/${dbId}`)
+    return api.get('/databases/select', { params: { db_id: dbId } })
   },
 
   getDatabaseInfo(dbId) {

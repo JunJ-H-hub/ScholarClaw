@@ -62,9 +62,11 @@ async def create_database(
         return {"message": f"创建数据库失败 {e}", "status": "failed"}
 
 # 选择知识库
-@knowledge.get("/databases/select/{db_id}")
-async def select_database(db_id: str):
+@knowledge.get("/databases/select")
+async def select_database(db_id: str = Query(default="")):
     """选择知识库"""
+    if db_id == "":
+        return {"message": "已取消选择知识库"}
     database = knowledge_base.get_database_info(db_id)
     config.set("current_db_id", db_id)
     if database is None:

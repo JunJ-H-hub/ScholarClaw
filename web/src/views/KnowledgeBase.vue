@@ -135,12 +135,7 @@ const handleSelectDatabase = async (database) => {
   if (selectedDatabaseId.value === database.id) {
     selectedDatabaseId.value = ''
     selectedDatabase.value = null
-    try {
-      await knowledgeApi.selectDatabase('')
-      showToast('已取消选择知识库', 'success')
-    } catch (error) {
-      console.error('取消选择知识库失败:', error)
-    }
+    showToast('已取消选择知识库', 'success')
     return
   }
   
@@ -149,16 +144,10 @@ const handleSelectDatabase = async (database) => {
   
   console.log('设置后的选中ID:', selectedDatabaseId.value)
   
-  try {
-    await knowledgeApi.selectDatabase(database.id)
-    showToast(`已选择知识库: ${database.name}`, 'success')
-    
-    if (queryTestRef.value) {
-      queryTestRef.value.clearResults()
-    }
-  } catch (error) {
-    console.error('选择知识库失败:', error)
-    showToast('选择知识库失败', 'error')
+  showToast(`已选择知识库: ${database.name}`, 'success')
+  
+  if (queryTestRef.value) {
+    queryTestRef.value.clearResults()
   }
 }
 

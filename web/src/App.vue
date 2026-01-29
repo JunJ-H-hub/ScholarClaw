@@ -26,13 +26,6 @@
           >
             {{ selectedDatabase ? `📚 ${selectedDatabase.name}` : '选择知识库' }}
           </button>
-          <button 
-            v-if="selectedDatabase"
-            class="btn-manage-knowledge"
-            @click="goToKnowledgeBase"
-          >
-            管理知识库
-          </button>
         </div>
       </div>
     </div>
@@ -114,6 +107,7 @@ import { useRouter } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import SelectKnowledgeModal from './components/SelectKnowledgeModal.vue'
+import { knowledgeApi } from './api/knowledge'
 
 const router = useRouter()
 
@@ -408,8 +402,27 @@ const copyReport = () => {
   navigator.clipboard.writeText(reportContent.value)
 }
 
-const handleSelectDatabase = (database) => {
-  selectedDatabase.value = database
+const handleSelectDatabase = async (database) => {
+  if (!database) {
+    selectedDatabase.value = null
+    try {
+      await knowledgeApi.selectDatabase('')
+      console.log('已取消选择知识库')
+    } catch (error) {
+      console.error('取消选择知识库失败:', error)
+      alert('取消选择知识库失败，请重试')
+    }
+    return
+  }
+
+  try {
+    await knowledgeApi.selectDatabase(database.id)
+    selectedDatabase.value = database
+    console.log(`已选择知识库: ${database.name} (ID: ${database.id})`)
+  } catch (error) {
+    console.error('选择知识库失败:', error)
+    alert('选择知识库失败，请重试')
+  }
 }
 
 const handleCreateDatabase = () => {
@@ -528,8 +541,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-.btn-select-knowledge,
-.btn-manage-knowledge {
+.btn-select-knowledge {
   padding: clamp(8px, 1.2vw, 12px) clamp(16px, 3vw, 24px);
   border: none;
   border-radius: 8px;
@@ -550,19 +562,6 @@ h1 {
 .btn-select-knowledge:hover {
   background: #3498db;
   color: white;
-  transform: translateY(-1px);
-}
-
-.btn-manage-knowledge {
-  background: #f8f9fa;
-  color: #6c757d;
-  border: 2px solid #ced4da;
-}
-
-.btn-manage-knowledge:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  color: #495057;
   transform: translateY(-1px);
 }
 
@@ -618,8 +617,7 @@ h1 {
     gap: 10px;
   }
   
-  .btn-select-knowledge,
-  .btn-manage-knowledge {
+  .btn-select-knowledge {
     flex: 1;
     text-align: center;
     padding: 10px 16px;
@@ -664,8 +662,7 @@ h1 {
     font-size: 14px;
   }
   
-  .btn-select-knowledge,
-  .btn-manage-knowledge {
+  .btn-select-knowledge {
     padding: 8px 12px;
     font-size: 12px;
   }
