@@ -41,7 +41,7 @@ class KnowledgeBaseManager:
 
         # 加载全局元数据
         self._load_global_metadata()
-        self._normalize_global_metadata()
+        self._normalize_global_metadata()  # 规范化时间戳
 
         # 初始化已存在的知识库实例
         self._initialize_existing_kbs()

@@ -1,9 +1,9 @@
 from src.core.model_client import create_default_client
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
-from src.agents.sub_writing_agent.writing_agent import writing_agent
-from src.agents.sub_writing_agent.retrieval_agent import review_agent
-from src.agents.sub_writing_agent.review_agent import review_agent
+from src.agents.sub_writing_agent.writing_agent import create_writing_agent
+from src.agents.sub_writing_agent.retrieval_agent import create_review_agent
+from src.agents.sub_writing_agent.review_agent import create_review_agent
 from src.core.prompts import selector_prompt
 
 def create_writing_group(state_queue):
@@ -11,9 +11,9 @@ def create_writing_group(state_queue):
 
     text_termination = TextMentionTermination("APPROVE")
     
-    writing_agent = writing_agent(state_queue)
-    review_agent = review_agent(state_queue)
-    retrieval_agent = review_agent(state_queue)
+    writing_agent = create_writing_agent(state_queue)
+    review_agent = create_review_agent(state_queue)
+    retrieval_agent = create_review_agent(state_queue)
 
     task_group = SelectorGroupChat(
         [writing_agent,retrieval_agent,review_agent],

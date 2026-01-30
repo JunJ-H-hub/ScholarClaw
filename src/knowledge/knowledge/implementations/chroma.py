@@ -198,85 +198,87 @@ class ChromaKB(KnowledgeBase):
             return None
     def parse_json_into_embedding_chunks(self, json_content: str, file_id: str, filename: str, params: dict) -> list[dict]:
         """将JSON解析成嵌入块"""
-        import json
-        artifacts = json.loads(json_content)
-        chunks = []
-        for chunk_index, artifact in enumerate(artifacts):
-            image_url = artifact ["image_url"]
-            img_desc = get_image_description(image_url)
-            desc_embedding = get_text_embedding(img_desc)
-            image_embedding = get_image_embedding(image_url)
-            img_chunk = {
-                "content": f"文物名称：{artifact ['name']}\n 对应的文物描述：{artifact ['description']}\n 对应的文物图片URL：{artifact ['image_url']}\n 对应的文物图片的描述：{img_desc}",
-                "embeddings": image_embedding,
-                "id": f"{file_id}_chunk_{chunk_index}_img_chunk",
-                "file_id": file_id,
-                "filename": filename,
-                "chunk_index": chunk_index,
-                "source": filename,
-                "chunk_id": f"{file_id}_chunk_{chunk_index}",
-                "metadata": {
-                    "description": artifact ["description"],
-                    "name": artifact ["name"],
-                    "image_url": artifact ["image_url"],
-                    "detail_url": artifact ["detail_url"], 
-                    "full_doc_id": file_id,
-                    "source": filename,
-                    "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
-                    "chunk_type": "img_chunk",
-                }
-            }
-            desc_chunk = {
-                "content": f"文物名称：{artifact ['name']}\n 对应的文物描述：{artifact ['description']}\n 对应的文物图片URL：{artifact ['image_url']}\n 对应的文物图片的描述：{img_desc}",
-                "embeddings": desc_embedding,
-                "id": f"{file_id}_chunk_{chunk_index}_desc_chunk",
-                "file_id": file_id,
-                "filename": filename,
-                "chunk_index": chunk_index,
-                "source": filename,
-                "chunk_id": f"{file_id}_chunk_{chunk_index}",
-                "metadata": {
-                    "description": artifact ["description"],
-                    "name": artifact ["name"],
-                    "image_url": artifact ["image_url"],
-                    "detail_url": artifact ["detail_url"], 
-                    "full_doc_id": file_id,
-                    "source": filename,
-                    "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
-                    "chunk_type": "desc_chunk",
-                }
-            }
-            chunks.append (img_chunk)
-            chunks.append (desc_chunk)
-        return chunks
+        pass
+        # import json
+        # artifacts = json.loads(json_content)
+        # chunks = []
+        # for chunk_index, artifact in enumerate(artifacts):
+        #     image_url = artifact ["image_url"]
+        #     img_desc = get_image_description(image_url)
+        #     desc_embedding = get_text_embedding(img_desc)
+        #     image_embedding = get_image_embedding(image_url)
+        #     img_chunk = {
+        #         "content": f"文物名称：{artifact ['name']}\n 对应的文物描述：{artifact ['description']}\n 对应的文物图片URL：{artifact ['image_url']}\n 对应的文物图片的描述：{img_desc}",
+        #         "embeddings": image_embedding,
+        #         "id": f"{file_id}_chunk_{chunk_index}_img_chunk",
+        #         "file_id": file_id,
+        #         "filename": filename,
+        #         "chunk_index": chunk_index,
+        #         "source": filename,
+        #         "chunk_id": f"{file_id}_chunk_{chunk_index}",
+        #         "metadata": {
+        #             "description": artifact ["description"],
+        #             "name": artifact ["name"],
+        #             "image_url": artifact ["image_url"],
+        #             "detail_url": artifact ["detail_url"], 
+        #             "full_doc_id": file_id,
+        #             "source": filename,
+        #             "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
+        #             "chunk_type": "img_chunk",
+        #         }
+        #     }
+        #     desc_chunk = {
+        #         "content": f"文物名称：{artifact ['name']}\n 对应的文物描述：{artifact ['description']}\n 对应的文物图片URL：{artifact ['image_url']}\n 对应的文物图片的描述：{img_desc}",
+        #         "embeddings": desc_embedding,
+        #         "id": f"{file_id}_chunk_{chunk_index}_desc_chunk",
+        #         "file_id": file_id,
+        #         "filename": filename,
+        #         "chunk_index": chunk_index,
+        #         "source": filename,
+        #         "chunk_id": f"{file_id}_chunk_{chunk_index}",
+        #         "metadata": {
+        #             "description": artifact ["description"],
+        #             "name": artifact ["name"],
+        #             "image_url": artifact ["image_url"],
+        #             "detail_url": artifact ["detail_url"], 
+        #             "full_doc_id": file_id,
+        #             "source": filename,
+        #             "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
+        #             "chunk_type": "desc_chunk",
+        #         }
+        #     }
+        #     chunks.append (img_chunk)
+        #     chunks.append (desc_chunk)
+        # return chunks
 
     def split_json_into_chunks(self, json_content: str, file_id: str, filename: str, params: dict) -> list[dict]:
         """将JSON分割成块"""
-        import json
-        artifacts = json.loads(json_content)
-        chunks = []
-        for chunk_index, artifact in enumerate(artifacts):
-            content = f"文物名称：{artifact ['name']}\n 文物描述：{artifact ['description']}"
-            chunk = {
-                "content": content.strip(),
-                "id": f"{file_id}_chunk_{chunk_index}",
-                "file_id": file_id,
-                "filename": filename,
-                "chunk_index": chunk_index,
-                "source": filename,
-                "chunk_id": f"{file_id}_chunk_{chunk_index}",
-                "metadata": {
-                    "image_url": artifact ["image_url"],
-                    "detail_url": artifact ["detail_url"], 
-                    "name": artifact ["name"],
-                    "full_doc_id": file_id,
-                    "source": filename,
-                    "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
-                    "chunk_type": "normal",
-                }
-            }
-            chunks.append (chunk)
-        return chunks
+        pass
+        # import json
+        # artifacts = json.loads(json_content)
+        # chunks = []
+        # for chunk_index, artifact in enumerate(artifacts):
+        #     content = f"文物名称：{artifact ['name']}\n 文物描述：{artifact ['description']}"
+        #     chunk = {
+        #         "content": content.strip(),
+        #         "id": f"{file_id}_chunk_{chunk_index}",
+        #         "file_id": file_id,
+        #         "filename": filename,
+        #         "chunk_index": chunk_index,
+        #         "source": filename,
+        #         "chunk_id": f"{file_id}_chunk_{chunk_index}",
+        #         "metadata": {
+        #             "image_url": artifact ["image_url"],
+        #             "detail_url": artifact ["detail_url"], 
+        #             "name": artifact ["name"],
+        #             "full_doc_id": file_id,
+        #             "source": filename,
+        #             "chunk_id": f"{file_id}_artifact_chunk_{chunk_index}",
+        #             "chunk_type": "normal",
+        #         }
+        #     }
+        #     chunks.append (chunk)
+        # return chunks
 
     def _split_text_into_chunks(self, text: str, file_id: str, filename: str, params: dict) -> list[dict]:
         """将文本分割成块"""
@@ -297,7 +299,6 @@ class ChromaKB(KnowledgeBase):
                 "source": chunk["source"],
                 "chunk_id": chunk["chunk_id"],
                 "full_doc_id": file_id,
-                "source": filename,
                 "chunk_type": chunk.get("chunk_type", "normal"),  # 添加chunk类型标识
             }
 
@@ -356,24 +357,15 @@ class ChromaKB(KnowledgeBase):
             file_ext = file_path_obj.suffix.lower()
 
             try:
-                # 尝试图文嵌入
-                await self.add_image_embeddings(db_id, item, params)
-                # 根据文件扩展名处理内容
-                if file_ext == ".json":
-                    json_content = await process_file_to_json(item, params=params)
-                else :
-                    # 根据内容类型处理内容
-                    if content_type == "file":
-                        markdown_content = await process_file_to_markdown(item, params=params)
-                    else:  # URL    
-                        markdown_content = await process_url_to_markdown(item, params=params)
+                # 根据内容类型处理内容
+                if content_type == "file":
+                    markdown_content = await process_file_to_markdown(item, params=params)
+                else:  # URL    
+                    markdown_content = await process_url_to_markdown(item, params=params)
+            
                 
                 chunks = []
-                if file_ext == ".json":
-                    chunks = self.split_json_into_chunks(json_content, file_id, filename, params)
-                else:
-                    # 分割文本成块
-                    chunks = self._split_text_into_chunks(markdown_content, file_id, filename, params)
+                chunks = self._split_text_into_chunks(markdown_content, file_id, filename, params)
                 logger.info(f"Split {filename} into {len(chunks)} chunks")
 
                 # 准备向量数据库插入的数据
@@ -423,23 +415,24 @@ class ChromaKB(KnowledgeBase):
     
     async def add_image_embeddings(self, db_id: str, item: str, params: dict | None):
         """添加图片嵌入"""
+        pass
         # 校验格式
-        if not validate_img_embedding_file(item):
-            return
-        if db_id not in self.databases_meta:
-            raise ValueError(f"Database {db_id} not found")
+        # if not validate_img_embedding_file(item):
+        #     return
+        # if db_id not in self.databases_meta:
+        #     raise ValueError(f"Database {db_id} not found")
 
-        collection = await self._get_image_chroma_collection(db_id)
-        if not collection:
-            raise ValueError(f"Failed to get ChromaDB collection for {db_id}")
+        # collection = await self._get_image_chroma_collection(db_id)
+        # if not collection:
+        #     raise ValueError(f"Failed to get ChromaDB collection for {db_id}")
 
-        content_type = params.get("content_type", "file") if params else "file"
-        # processed_items_info = []
+        # content_type = params.get("content_type", "file") if params else "file"
+        # # processed_items_info = []
 
-        # 准备文件元数据
-        metadata = prepare_item_metadata(item, content_type, db_id)
-        file_id = metadata["file_id"]
-        filename = metadata["filename"]
+        # # 准备文件元数据
+        # metadata = prepare_item_metadata(item, content_type, db_id)
+        # file_id = metadata["file_id"]
+        # filename = metadata["filename"]
 
         # 添加文件记录
         # file_record = metadata.copy()
@@ -448,59 +441,59 @@ class ChromaKB(KnowledgeBase):
 
             # self._add_to_processing_queue(file_id)
 
-        file_path_obj = Path(item)
-        file_ext = file_path_obj.suffix.lower()
+        # file_path_obj = Path(item)
+        # file_ext = file_path_obj.suffix.lower()
 
-        try:
-            json_content = ""
-            # 根据文件扩展名处理内容
-            json_content = await process_file_to_json(item, params=params)
+        # try:
+        #     json_content = ""
+        #     # 根据文件扩展名处理内容
+        #     json_content = await process_file_to_json(item, params=params)
           
-            chunks = []
-            chunks = self.parse_json_into_embedding_chunks(json_content, file_id, filename, params)
+        #     chunks = []
+        #     chunks = self.parse_json_into_embedding_chunks(json_content, file_id, filename, params)
 
-            logger.info(f"Split {filename} into {len(chunks)} chunks")
+        #     logger.info(f"Split {filename} into {len(chunks)} chunks")
 
-            # 准备向量数据库插入的数据
-            if chunks:
-                documents = [chunk["content"] for chunk in chunks]
-                embeddings = [chunk["embeddings"] for chunk in chunks]
-                metadatas = [chunk["metadata"] for chunk in chunks]
-                ids = [chunk["id"] for chunk in chunks]
+        #     # 准备向量数据库插入的数据
+        #     if chunks:
+        #         documents = [chunk["content"] for chunk in chunks]
+        #         embeddings = [chunk["embeddings"] for chunk in chunks]
+        #         metadatas = [chunk["metadata"] for chunk in chunks]
+        #         ids = [chunk["id"] for chunk in chunks]
 
-                # 插入到 ChromaDB - 分批处理以避免超出 OpenAI 批次大小限制
-                batch_size = 64  # OpenAI 的最大批次大小限制
-                total_batches = (len(chunks) + batch_size - 1) // batch_size
+        #         # 插入到 ChromaDB - 分批处理以避免超出 OpenAI 批次大小限制
+        #         batch_size = 64  # OpenAI 的最大批次大小限制
+        #         total_batches = (len(chunks) + batch_size - 1) // batch_size
 
-                for i in range(0, len(chunks), batch_size):
-                    batch_documents = documents[i : i + batch_size]
-                    batch_embeddings = embeddings[i : i + batch_size]
-                    batch_metadatas = metadatas[i : i + batch_size]
-                    batch_ids = ids[i : i + batch_size]
+        #         for i in range(0, len(chunks), batch_size):
+        #             batch_documents = documents[i : i + batch_size]
+        #             batch_embeddings = embeddings[i : i + batch_size]
+        #             batch_metadatas = metadatas[i : i + batch_size]
+        #             batch_ids = ids[i : i + batch_size]
 
-                    await asyncio.to_thread(
-                        collection.add,
-                        documents=batch_documents,
-                        embeddings=batch_embeddings,
-                        metadatas=batch_metadatas,
-                        ids=batch_ids,
-                    )
-                    batch_num = i // batch_size + 1
-                    logger.info(f"Processed batch {batch_num}/{total_batches} for {filename}")
+        #             await asyncio.to_thread(
+        #                 collection.add,
+        #                 documents=batch_documents,
+        #                 embeddings=batch_embeddings,
+        #                 metadatas=batch_metadatas,
+        #                 ids=batch_ids,
+        #             )
+        #             batch_num = i // batch_size + 1
+        #             logger.info(f"Processed batch {batch_num}/{total_batches} for {filename}")
 
-            logger.info(f"Inserted {content_type} {item} into Img_ChromaDB. Done.")
+        #     logger.info(f"Inserted {content_type} {item} into Img_ChromaDB. Done.")
 
                 # 更新状态为完成
                 # self.files_meta[file_id]["status"] = "done"
                 # self._save_metadata()
                 # file_record["status"] = "done"
 
-        except Exception as e:
+        # except Exception as e:
             # logger.error(f"处理{content_type} {item} 失败: {e}, {traceback.format_exc()}")
             # self.files_meta[file_id]["status"] = "failed"
             # self._save_metadata()
             # file_record["status"] = "failed"
-            raise e
+            # raise e
                     
     
     async def aquery(self, db_id: str , query_text: Union[str, List[str]] = "", **kwargs) -> list[dict]:
@@ -527,11 +520,15 @@ class ChromaKB(KnowledgeBase):
             metadatas = []
             distances = []
             # 处理文本查询结果
-            # 先判断 text_query_results 非空，且 documents 存在且是 non-empty 列表
-            if text_query_results and text_query_results.get("documents") and len(text_query_results["documents"]) > 0 and text_query_results["documents"][0]:
-                documents.extend(text_query_results["documents"][0])
-                metadatas.extend(text_query_results["metadatas"][0] if (text_query_results.get("metadatas") and len(text_query_results["metadatas"]) > 0) else [])
-                distances.extend(text_query_results["distances"][0] if (text_query_results.get("distances") and len(text_query_results["distances"]) > 0) else [])
+            # 遍历所有查询结果，支持多个查询文本
+            if text_query_results and text_query_results.get("documents") and len(text_query_results["documents"]) > 0:
+                for query_idx in range(len(text_query_results["documents"])):
+                    if text_query_results["documents"][query_idx]:
+                        documents.extend(text_query_results["documents"][query_idx])
+                        if text_query_results.get("metadatas") and len(text_query_results["metadatas"]) > query_idx and text_query_results["metadatas"][query_idx]:
+                            metadatas.extend(text_query_results["metadatas"][query_idx])
+                        if text_query_results.get("distances") and len(text_query_results["distances"]) > query_idx and text_query_results["distances"][query_idx]:
+                            distances.extend(text_query_results["distances"][query_idx])
 
             retrieved_chunks = []
             for i, doc in enumerate(documents):
