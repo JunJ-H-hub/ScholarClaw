@@ -7,7 +7,7 @@ from src.core.state_models import BackToFrontData,ExecutionState
 import asyncio
 
 
-async def parallel__writing_node(state: WritingState) -> Dict[str, Any]:
+async def parallel_writing_node(state: WritingState) -> Dict[str, Any]:
         """并行执行所有子任务"""
         
         async def run_single_subtask(task: Dict):
