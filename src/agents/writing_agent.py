@@ -3,18 +3,21 @@ import os
 # 将项目根目录添加到Python路径
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from typing import Dict, Any
+# from typing import Dict, Any
 from langgraph.graph import END, StateGraph
-from sqlalchemy.sql.functions import current_date
+# from sqlalchemy.sql.functions import current_date
 from src.agents.sub_writing_agent.writing_state_models import WritingState
 from src.core.state_models import State
-from src.agents.sub_writing_agent import writing_director_agent, parallel_writing_node
+# from src.agents.sub_writing_agent import writing_director_agent, parallel_writing_node
+from src.agents.sub_writing_agent.parallel_writing_node import parallel_writing_node
 from src.agents.sub_writing_agent.writing_director_agent import writing_director_node
-from src.agents.sub_writing_agent.writing_agent import section_writing_node
-from src.agents.sub_writing_agent.retrieval_agent import retrieval_node
+# from src.agents.sub_writing_agent.writing_agent import section_writing_node
+from src.agents.sub_writing_agent.writing_agent import create_writing_agent
+# from src.agents.sub_writing_agent.retrieval_agent import retrieval_node
+from src.agents.sub_writing_agent.retrieval_agent import create_review_agent
 from src.core.state_models import ExecutionState
-from src.core.state_models import BackToFrontData
-from src.utils.tool_utils import handlerChunk
+# from src.core.state_models import BackToFrontData
+# from src.utils.tool_utils import handlerChunk
 from src.utils.log_utils import setup_logger
 logger = setup_logger(__name__)
 
