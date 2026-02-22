@@ -4,13 +4,12 @@ from autogen_core.tools import FunctionTool
 from src.services.retrieval_tool import retrieval_tool
 from src.core.prompts import writing_agent_prompt
 
-def create_writing_agent(state_queue):
+def create_writing_agent():
     
     model_client = create_default_client()
 
     writing_agent = AssistantAgent(
         name="writing_agent",
-        state_queue=state_queue,
         description="一个写作助手。",
         model_client=model_client,
         system_message=writing_agent_prompt,

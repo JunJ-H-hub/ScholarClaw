@@ -6,14 +6,14 @@ from src.agents.sub_writing_agent.retrieval_agent import create_review_agent
 from src.agents.sub_writing_agent.review_agent import create_review_agent
 from src.core.prompts import selector_prompt
 
-def create_writing_group(state_queue):
+def create_writing_group():
     model_client = create_default_client()
 
     text_termination = TextMentionTermination("APPROVE")
     
-    writing_agent = create_writing_agent(state_queue)
-    review_agent = create_review_agent(state_queue)
-    retrieval_agent = create_review_agent(state_queue)
+    writing_agent = create_writing_agent()
+    review_agent = create_review_agent()
+    retrieval_agent = create_review_agent()
 
     task_group = SelectorGroupChat(
         [writing_agent,retrieval_agent,review_agent],
