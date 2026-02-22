@@ -159,23 +159,30 @@ async def reading_node(state: State) -> State:
         raw_content = result.messages[-1].content
         logger.info(f"Reading Agent Raw Output: {raw_content}") # 打印原始输出
         
-        # 清理 Markdown 代码块
-        clean_content = raw_content.strip()
-        if clean_content.startswith("```"):
-            clean_content = re.sub(r"^```(?:json)?\s*", "", clean_content)
-            clean_content = re.sub(r"\s*```$", "", clean_content)
-           
-        try:
-            # 1. 尝试标准 JSON 解析
-            data = json.loads(clean_content)
-        except json.JSONDecodeError:
+        if isinstance(raw_content, ExtractedPaperData):
+            extracted_papers.papers.append(raw_content)
+            successful_papers.append(papers[i])
+            continue
+        if isinstance(raw_content, dict):
+            data = raw_content
+        elif isinstance(raw_content, str):
+            clean_content = raw_content.strip()
+            if clean_content.startswith("```"):
+                clean_content = re.sub(r"^```(?:json)?\s*", "", clean_content)
+                clean_content = re.sub(r"\s*```$", "", clean_content)
             try:
-                # 2. 如果失败，尝试作为 Python 字典解析（处理单引号问题）
-                data = ast.literal_eval(clean_content)
-            except Exception:
-                logger.error(f"Failed to parse content as JSON or Python dict: {clean_content}")
-                continue
+                data = json.loads(clean_content)
+            except json.JSONDecodeError:
+                try:
+                    data = ast.literal_eval(clean_content)
+                except Exception:
+                    logger.error(f"Failed to parse content as JSON or Python dict: {clean_content}")
+                    continue
+        else:
+            logger.error(f"Unsupported content type: {type(raw_content)}")
+            continue
 
+        # 清理 Markdown 代码块
         # 3. 数据结构修正（处理列表包裹或 {"papers": ...} 包裹）
         if isinstance(data, list):
             if len(data) > 0:
