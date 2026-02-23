@@ -138,6 +138,18 @@ async def analyse_node(state: State) -> State:
         analyse_results = response.messages[-1].content
         
         current_state.analyse_results = analyse_results
+        
+        # 尝试解析 JSON 并只提取 global_analyse 字段发送给前端，避免显示杂乱的 JSON 数据
+        display_content = analyse_results
+        try:
+            data_obj = json.loads(analyse_results)
+            if isinstance(data_obj, dict) and "global_analyse" in data_obj:
+                 display_content = data_obj["global_analyse"]
+        except Exception:
+            pass # 如果解析失败，就还是保持原样，或者可以改为发送简短提示
+             
+        await state_queue.put(BackToFrontData(step=ExecutionState.ANALYZING,state="completed",data=display_content))
+        
         await state_queue.put(BackToFrontData(step=ExecutionState.ANALYZING,state="completed",data=analyse_results))
 
         return {"value": current_state}
