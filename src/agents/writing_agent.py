@@ -14,7 +14,7 @@ from src.agents.sub_writing_agent.writing_director_agent import writing_director
 # from src.agents.sub_writing_agent.writing_agent import section_writing_node
 from src.agents.sub_writing_agent.writing_agent import create_writing_agent
 # from src.agents.sub_writing_agent.retrieval_agent import retrieval_node
-from src.agents.sub_writing_agent.retrieval_agent import create_review_agent
+from src.agents.sub_writing_agent.retrieval_agent import create_retrieval_agent
 from src.core.state_models import ExecutionState
 # from src.core.state_models import BackToFrontData
 # from src.utils.tool_utils import handlerChunk
