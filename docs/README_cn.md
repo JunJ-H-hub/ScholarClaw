@@ -345,3 +345,6 @@ openai:
 ⭐ 如果这个项目对你有帮助，请给我们点个星支持一下！
 
 
+## Star 历史
+
+[![Star History Chart](https://api.star-history.com/image?repos=Tswoen/Paper-Agent&type=date&legend=top-left)](https://www.star-history.com/?repos=Tswoen%2FPaper-Agent&type=date&logscale=&legend=top-left)
