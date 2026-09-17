@@ -62,10 +62,12 @@ class AnalyseAgent(BaseAgent):
         if self.context.llm is None:
             return AnalyseModelResult(reason="未配置可用分析模型")
         try:
+            # 中文注释：不在这里写死 temperature/reasoning_effort，交给 provider 按
+            # agent 自己的配置（config/model.json 里 solar_agent 的设置）回退，
+            # 否则用户在设置页改了 temperature 也不会真正生效，某些模型
+            # （例如只接受固定 temperature 的思考模型）还会因此报错。
             response = await self.context.llm.provider.chat(
                 _subtopic_messages(topic=topic, group=group),
-                temperature=0.2,
-                reasoning_effort="medium",
             )
         except Exception as exc:
             return AnalyseModelResult(reason=f"分析模型调用失败：{exc}")
@@ -78,10 +80,9 @@ class AnalyseAgent(BaseAgent):
         if self.context.llm is None:
             return AnalyseModelResult(reason="未配置可用分析模型")
         try:
+            # 中文注释：同上，交给 agent 自己的配置决定 temperature/reasoning_effort。
             response = await self.context.llm.provider.chat(
                 _overall_messages(topic=topic, subtopic_analyses=subtopic_analyses),
-                temperature=0.2,
-                reasoning_effort="medium",
             )
         except Exception as exc:
             return AnalyseModelResult(reason=f"分析模型调用失败：{exc}")
