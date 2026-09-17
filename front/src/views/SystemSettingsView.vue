@@ -767,8 +767,11 @@ function emptyToUndefined(value: string) {
   return normalized ? normalized : undefined;
 }
 
-function parseOptionalNumber(value: string) {
-  const normalized = value.trim();
+function parseOptionalNumber(value: string | number) {
+  // 中文说明：Vue 3 对 <input type="number"> 的 v-model 会自动把值转成 number，
+  // 即使没有加 .number 修饰符；这里同时接受 string 和 number，避免对 number 调用
+  // .trim() 报错（value.trim is not a function）。
+  const normalized = typeof value === "number" ? String(value) : value.trim();
   if (!normalized) {
     return undefined;
   }
@@ -779,7 +782,7 @@ function parseOptionalNumber(value: string) {
   return parsed;
 }
 
-function parseOptionalInteger(value: string) {
+function parseOptionalInteger(value: string | number) {
   const parsed = parseOptionalNumber(value);
   if (parsed === undefined) {
     return undefined;

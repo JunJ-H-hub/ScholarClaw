@@ -114,5 +114,6 @@ export interface ModelConnectivityPayload {
   error_status_code: number | null;
   finish_reason: string | null;
   vector_dimensions: number | null;
+  reasoning_tokens_used: number | null;
   tested_at: string;
 }

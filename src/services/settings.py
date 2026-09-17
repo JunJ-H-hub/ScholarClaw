@@ -355,13 +355,24 @@ def _normalized_config(data: JsonObject) -> JsonObject:
     return data
 
 
+# 中文说明：探测请求预算故意留得比“只回复 OK”所需宽松一些，
+# 用来兼容“思考型/推理模型”——这类模型会先输出隐藏的 reasoning 内容，
+# 预算太小时还没轮到可见回答就被截断，会被误判成连通性失败。
+_CONNECTIVITY_PROBE_MAX_TOKENS = 64
+# 首次探测内容为空时，用这个更宽松的预算重试一次再判定，避免因为预算不足产生假失败。
+_CONNECTIVITY_RETRY_MAX_TOKENS = 512
+
+
 async def _test_agent_connectivity(config: ModelConfig, name: str, *, client: Any | None = None) -> JsonObject:
     """对指定智能体配置发起一次最小对话请求。
 
     中文说明：
     1. 这里只问一句“请只回复 OK”，尽量减少 token 消耗；
     2. 只要模型能正常返回任意非空文本，就说明这条配置是可用的；
-    3. 如果连 provider 都组装不起来，说明是配置问题，状态会标成 not_configured。
+    3. 如果连 provider 都组装不起来，说明是配置问题，状态会标成 not_configured；
+    4. 如果首次探测内容为空（常见于思考型模型把预算耗尽在隐藏推理上，
+       或者供应商偶发返回了退化的空响应），会用更大的预算自动重试一次再判定，
+       避免把“预算不够”误判成“连不上”。
     """
 
     agent = config.resolve_agent(name)
@@ -383,7 +394,7 @@ async def _test_agent_connectivity(config: ModelConfig, name: str, *, client: An
         response = await snapshot.provider.chat(
             [{"role": "user", "content": "请只回复 OK"}],
             temperature=0,
-            max_tokens=16,
+            max_tokens=_CONNECTIVITY_PROBE_MAX_TOKENS,
         )
         if not response.ok:
             detail = response.content.strip() or "模型没有返回成功结果"
@@ -401,27 +412,63 @@ async def _test_agent_connectivity(config: ModelConfig, name: str, *, client: An
             )
 
         content = response.content.strip()
-        if not content:
+        if content:
             return _connectivity_payload(
                 target_type="agent",
                 name=name,
                 provider=agent.provider,
                 model=agent.model_name,
-                status="failed",
-                message="模型接口已返回成功状态，但返回内容为空",
+                status="passed",
+                message="模型已成功返回内容",
                 latency_ms=_elapsed_ms(started_at),
                 finish_reason=response.finish_reason,
+                reasoning_tokens_used=_extract_reasoning_tokens(response.usage),
             )
 
+        # 内容为空：先不要直接判失败。无论是“思考型模型把 16~64 个 token 全用在
+        # 隐藏推理上”还是“供应商偶发的退化空响应”，都值得用更大的预算复核一次。
+        reasoning_tokens = _extract_reasoning_tokens(response.usage)
+        retry_response = await snapshot.provider.chat(
+            [{"role": "user", "content": "请只回复 OK"}],
+            temperature=0,
+            max_tokens=_CONNECTIVITY_RETRY_MAX_TOKENS,
+        )
+        retry_ok = retry_response.ok
+        retry_content = retry_response.content.strip() if retry_ok else ""
+        retry_reasoning_tokens = _extract_reasoning_tokens(retry_response.usage)
+
+        if retry_ok and retry_content:
+            return _connectivity_payload(
+                target_type="agent",
+                name=name,
+                provider=agent.provider,
+                model=agent.model_name,
+                status="passed",
+                message=(
+                    f"模型已成功返回内容（首次校验时该模型把 {reasoning_tokens} 个隐藏推理 token 用满了较小的预算，"
+                    "检测为思考型模型；实际使用请确保 max_tokens 留有足够余量）"
+                ),
+                latency_ms=_elapsed_ms(started_at),
+                finish_reason=retry_response.finish_reason,
+                reasoning_tokens_used=retry_reasoning_tokens,
+            )
+
+        final_reasoning_tokens = retry_reasoning_tokens if retry_ok else reasoning_tokens
+        final_finish_reason = retry_response.finish_reason if retry_ok else response.finish_reason
         return _connectivity_payload(
             target_type="agent",
             name=name,
             provider=agent.provider,
             model=agent.model_name,
-            status="passed",
-            message="模型已成功返回内容",
+            status="failed",
+            message=(
+                f"该模型即使把 max_tokens 提到 {_CONNECTIVITY_RETRY_MAX_TOKENS} 仍未产出可见回答"
+                f"（隐藏推理消耗了 {final_reasoning_tokens} 个 token，finish_reason={final_finish_reason}），"
+                "请确认模型选择是否正确，或在实际使用中进一步调大 max_tokens"
+            ),
             latency_ms=_elapsed_ms(started_at),
-            finish_reason=response.finish_reason,
+            finish_reason=final_finish_reason,
+            reasoning_tokens_used=final_reasoning_tokens,
         )
     finally:
         # 中文注释：设置页测试是短生命周期调用，完成后立即关闭 provider 自己创建的连接池。
@@ -815,6 +862,7 @@ def _connectivity_payload(
     error_status_code: int | None = None,
     finish_reason: str | None = None,
     vector_dimensions: int | None = None,
+    reasoning_tokens_used: int | None = None,
 ) -> JsonObject:
     """把连通性测试结果整理成统一结构，方便前端直接展示。"""
 
@@ -830,8 +878,30 @@ def _connectivity_payload(
         "error_status_code": error_status_code,
         "finish_reason": finish_reason,
         "vector_dimensions": vector_dimensions,
+        "reasoning_tokens_used": reasoning_tokens_used,
         "tested_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+def _extract_reasoning_tokens(usage: JsonObject | None) -> int | None:
+    """从 usage 里读出隐藏推理消耗的 token 数，读不到就返回 None。
+
+    中文说明：
+    OpenAI 兼容协议把这个值放在 `usage.completion_tokens_details.reasoning_tokens`；
+    不同网关字段命名可能有出入，这里只按最常见的路径读取，读不到就返回 None，
+    不强行假设所有 provider 都有这个维度（例如 Anthropic 的 usage 里没有）。
+    """
+
+    if not isinstance(usage, dict):
+        return None
+    details = usage.get("completion_tokens_details")
+    if not isinstance(details, dict):
+        return None
+    value = details.get("reasoning_tokens")
+    try:
+        return int(value) if value is not None else None
+    except (TypeError, ValueError):
+        return None
 
 
 def _elapsed_ms(started_at: float) -> int:

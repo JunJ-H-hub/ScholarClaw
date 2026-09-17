@@ -240,8 +240,9 @@ class OpenAICompatProvider(LLMProvider):
             # 推理模型和新 OpenAI 模型使用 max_completion_tokens。
             token_key = "max_completion_tokens" if self.spec.supports_max_completion_tokens or _is_reasoning_model(self.model) else "max_tokens"
             kwargs[token_key] = settings.max_tokens
-        if settings.reasoning_effort:
-            kwargs["reasoning_effort"] = settings.reasoning_effort
+        effort = _normalize_reasoning_effort(settings.reasoning_effort)
+        if effort is not None:
+            kwargs["reasoning_effort"] = effort
         if stream and self.include_stream_usage:
             # 部分 OpenAI 兼容服务支持在最后一个流式片段返回 usage；不支持时由上游报错并走统一错误处理。
             kwargs["stream_options"] = {"include_usage": True}
@@ -412,6 +413,30 @@ def _enforce_role_alternation(messages: list[JsonObject]) -> list[JsonObject]:
         # 末尾 assistant 普通消息通常是历史回复，不应作为“待回答输入”的最后一条发给模型。
         result.pop()
     return result
+
+
+def _normalize_reasoning_effort(value: str | None) -> str | None:
+    """把 reasoning_effort 归一化为上游可理解的取值。
+
+    Args:
+        value: 配置或调用方传入的原始 reasoning_effort。
+
+    Returns:
+        None 表示不应该发送该字段；否则返回原样值（如 low/medium/high）。
+
+    中文说明：
+    这里和 anthropic.py 的 _normalize_effort 保持同样的语义——"none/off/disabled"
+    表示用户想关闭推理，但这不是 OpenAI 兼容协议里的合法枚举值，字面发送给上游
+    很容易被忽略或引发未定义行为（例如某些网关会因此继续走模型默认的思考模式）。
+    只有不发送这个字段，才是真正意义上的"关闭"。
+    """
+
+    if not value:
+        return None
+    normalized = str(value).strip().lower().replace("-", "").replace("_", "")
+    if normalized in {"", "none", "off", "disabled"}:
+        return None
+    return value
 
 
 def _is_reasoning_model(model: str) -> bool:
